@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=390px, initial-scale=1.0">
+<title>VISIONIQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080A0F;
+    --surface: #0E1118;
+    --border: #1E2535;
+    --accent: #00E5FF;
+    --accent2: #7B61FF;
+    --text: #E8EAF0;
+    --muted: #4A5068;
+    --success: #00FF88;
+    --warning: #FFB800;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Syne', sans-serif;
+    background: #1a1a2e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  .phone-frame {
+    width: 390px;
+    height: 844px;
+    background: var(--bg);
+    border-radius: 48px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 0 2px #2a2a3e, 0 40px 100px rgba(0,0,0,0.8), 0 0 80px rgba(0,229,255,0.05);
+    display: flex;
+    flex-direction: column;
+  }
+  .notch {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 126px; height: 34px;
+    background: #000;
+    border-radius: 0 0 20px 20px;
+    z-index: 100;
+  }
+  .status-bar {
+    padding: 14px 24px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text);
+    flex-shrink: 0;
+    height: 44px;
+  }
+  .status-right { display: flex; gap: 6px; align-items: center; }
+  .app-header {
+    padding: 12px 24px 16px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: var(--text); }
+  .logo span { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-top: 2px; }
+  .content { flex: 1; overflow-y: auto; padding: 20px 20px 100px; scrollbar-width: none; }
+  .content::-webkit-scrollbar { display: none; }
+
+  .server-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,255,136,0.05);
+    border: 1px solid rgba(0,255,136,0.15);
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-bottom: 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--success);
+  }
+  .server-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .server-url-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--success);
+  }
+  .server-url-input::placeholder { color: rgba(0,255,136,0.3); }
+
+  .api-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .api-icon { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #7B61FF22, #7B61FF44); border: 1px solid #7B61FF44; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .api-input-wrap { flex: 1; }
+  .api-label { font-size: 10px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .api-input { width: 100%; background: transparent; border: none; outline: none; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text); }
+  .api-input::placeholder { color: var(--muted); }
+
+  .upload-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: 20px;
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .upload-zone::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, rgba(0,229,255,0.03), transparent 70%); opacity: 0; transition: opacity 0.3s; }
+  .upload-zone:hover::before, .upload-zone.active::before { opacity: 1; }
+  .upload-zone:hover, .upload-zone.active { border-color: var(--accent); border-style: solid; }
+  .upload-icon { font-size: 36px; margin-bottom: 10px; display: block; }
+  .upload-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .upload-sub { font-size: 11px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
+
+  .divider { text-align: center; font-size: 10px; font-family: 'IBM Plex Mono', monospace; color: var(--muted); margin: 12px 0; display: flex; align-items: center; gap: 10px; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .url-input-wrap { display: flex; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; align-items: center; margin-bottom: 16px; }
+  .url-input-wrap input { flex: 1; background: transparent; border: none; outline: none; font-size: 13px; color: var(--text); font-family: 'IBM Plex Mono', monospace; }
+  .url-input-wrap input::placeholder { color: var(--muted); }
+
+  .analyze-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; border-radius: 16px; font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: #000; cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s; margin-bottom: 20px; }
+  .analyze-btn:active { transform: scale(0.98); }
+  .analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-inner { display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+  .loading-bar { height: 2px; background: var(--border); border-radius: 2px; margin-bottom: 10px; overflow: hidden; display: none; }
+  .loading-bar.active { display: block; }
+  .loading-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 2px; width: 0%; transition: width 0.5s ease; }
+
+  .status-text { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--accent); text-align: center; margin-bottom: 16px; display: none; letter-spacing: 0.5px; }
+  .status-text.active { display: block; }
+
+  .error-box { background: rgba(255,60,60,0.08); border: 1px solid rgba(255,60,60,0.2); border-radius: 12px; padding: 12px 14px; font-size: 12px; color: #FF6B6B; font-family: 'IBM Plex Mono', monospace; margin-bottom: 16px; display: none; }
+  .error-box.show { display: block; }
+
+  .results { display: none; }
+  .results.show { display: block; }
+
+  .result-section { margin-bottom: 20px; }
+  .result-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .result-header-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+  .icon-cyan { background: rgba(0,229,255,0.1); border: 1px solid rgba(0,229,255,0.2); }
+  .icon-purple { background: rgba(123,97,255,0.1); border: 1px solid rgba(123,97,255,0.2); }
+  .icon-green { background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.2); }
+  .result-title { font-size: 13px; font-weight: 700; color: var(--text); letter-spacing: 0.5px; }
+  .result-count { margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); }
+
+  .timeline { display: flex; flex-direction: column; gap: 8px; }
+  .timeline-item { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+  .timestamp { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent); flex-shrink: 0; padding-top: 1px; min-width: 40px; }
+  .transcript-text { font-size: 12px; color: var(--text); line-height: 1.5; }
+  .speaker-tag { display: inline-block; font-size: 9px; font-family: 'IBM Plex Mono', monospace; padding: 1px 6px; border-radius: 4px; margin-right: 5px; }
+  .speaker-a { background: rgba(0,229,255,0.1); color: var(--accent); border: 1px solid rgba(0,229,255,0.2); }
+  .speaker-b { background: rgba(123,97,255,0.1); color: var(--accent2); border: 1px solid rgba(123,97,255,0.2); }
+
+  .visual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .visual-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; }
+  .visual-time { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--accent); margin-bottom: 4px; }
+  .visual-desc { font-size: 11px; color: var(--text); line-height: 1.4; }
+  .visual-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .visual-tag { font-size: 9px; font-family: 'IBM Plex Mono', monospace; padding: 2px 6px; border-radius: 4px; background: rgba(255,184,0,0.1); color: var(--warning); border: 1px solid rgba(255,184,0,0.2); }
+
+  .report-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
+  .report-meta { display: flex; gap: 16px; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+  .meta-item { text-align: center; }
+  .meta-val { font-size: 18px; font-weight: 800; color: var(--accent); display: block; }
+  .meta-key { font-size: 9px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; }
+  .report-body { font-size: 12px; color: #9AA0B8; line-height: 1.7; }
+  .report-highlights { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .highlight-item { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: var(--text); }
+  .highlight-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; margin-top: 5px; }
+
+  .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: 84px; background: rgba(8,10,15,0.95); backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; padding: 0 10px 20px; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 16px; border-radius: 12px; cursor: pointer; transition: all 0.2s; }
+  .nav-item.active { background: rgba(0,229,255,0.08); }
+  .nav-icon { font-size: 18px; }
+  .nav-label { font-size: 9px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; }
+  .nav-item.active .nav-label { color: var(--accent); }
+  .nav-item:not(.active) .nav-label { color: var(--muted); }
+  .glow { position: absolute; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(0,229,255,0.08), transparent 70%); pointer-events: none; top: -50px; right: -50px; }
+  input[type="file"] { display: none; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+  <div class="glow"></div>
+  <div class="notch"></div>
+
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="status-right"><span>●●●●</span><span>WiFi</span><span>100%</span></div>
+  </div>
+
+  <div class="app-header">
+    <div class="logo">VISION<span>IQ</span></div>
+    <div class="tagline">AI VIDEO ANALYSIS SYSTEM</div>
+  </div>
+
+  <div class="content">
+
+    <!-- 서버 URL -->
+    <div class="server-badge">
+      <div class="server-dot"></div>
+      <input class="server-url-input" id="serverUrl" placeholder="https://your-app.railway.app" value="">
+    </div>
+
+    <!-- API Key -->
+    <div class="api-section">
+      <div class="api-icon">🔑</div>
+      <div class="api-input-wrap">
+        <div class="api-label">GEMINI API KEY</div>
+        <input class="api-input" id="apiKey" type="password" placeholder="AIzaSy...">
+      </div>
+    </div>
+
+    <!-- Upload -->
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+      <span class="upload-icon">🎬</span>
+      <div class="upload-title">영상 파일 업로드</div>
+      <div class="upload-sub">MP4 · MOV · AVI · MKV 지원</div>
+      <input type="file" id="fileInput" accept="video/*" onchange="handleFileSelect(this)">
+    </div>
+
+    <div class="divider">또는 링크 입력</div>
+
+    <div class="url-input-wrap">
+      <span style="font-size:16px;">🔗</span>
+      <input id="videoUrl" placeholder="영상 직접 URL 입력 (mp4 링크)..." />
+    </div>
+
+    <button class="analyze-btn" id="analyzeBtn" onclick="startAnalysis()">
+      <div class="btn-inner"><span>🔍</span><span>영상 분석 시작</span></div>
+    </button>
+
+    <div class="loading-bar" id="loadingBar">
+      <div class="loading-fill" id="loadingFill"></div>
+    </div>
+    <div class="status-text" id="statusText"></div>
+    <div class="error-box" id="errorBox"></div>
+
+    <div class="results" id="results">
+      <div class="result-section">
+        <div class="result-header">
+          <div class="result-header-icon icon-cyan">🎤</div>
+          <div class="result-title">음성 타임라인</div>
+          <div class="result-count" id="transcriptCount"></div>
+        </div>
+        <div class="timeline" id="timeline"></div>
+      </div>
+
+      <div class="result-section">
+        <div class="result-header">
+          <div class="result-header-icon icon-purple">👁</div>
+          <div class="result-title">화면 분석</div>
+        </div>
+        <div class="visual-grid" id="visualGrid"></div>
+      </div>
+
+      <div class="result-section">
+        <div class="result-header">
+          <div class="result-header-icon icon-green">📋</div>
+          <div class="result-title">분석 보고서</div>
+        </div>
+        <div class="report-card">
+          <div class="report-meta" id="reportMeta"></div>
+          <div class="report-body" id="reportBody"></div>
+          <div class="report-highlights" id="reportHighlights"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item active"><span class="nav-icon">🔍</span><span class="nav-label">분석</span></div>
+    <div class="nav-item"><span class="nav-icon">📁</span><span class="nav-label">기록</span></div>
+    <div class="nav-item"><span class="nav-icon">⚙️</span><span class="nav-label">설정</span></div>
+  </div>
+</div>
+
+<script>
+let selectedFile = null;
+
+function handleFileSelect(input) {
+  if (input.files && input.files[0]) {
+    selectedFile = input.files[0];
+    const zone = document.getElementById('uploadZone');
+    zone.querySelector('.upload-title').textContent = selectedFile.name;
+    zone.querySelector('.upload-sub').textContent = (selectedFile.size / 1024 / 1024).toFixed(1) + ' MB';
+    zone.classList.add('active');
+    zone.querySelector('.upload-icon').textContent = '✅';
+  }
+}
+
+async function startAnalysis() {
+  const serverUrl = document.getElementById('serverUrl').value.trim().replace(/\/$/, '');
+  const apiKey = document.getElementById('apiKey').value.trim();
+  const videoUrl = document.getElementById('videoUrl').value.trim();
+
+  const errorBox = document.getElementById('errorBox');
+  errorBox.classList.remove('show');
+
+  if (!serverUrl) { showError('Railway 서버 URL을 입력해주세요.'); return; }
+  if (!apiKey) { showError('Gemini API 키를 입력해주세요.'); return; }
+  if (!selectedFile && !videoUrl) { showError('영상 파일을 업로드하거나 URL을 입력해주세요.'); return; }
+
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  document.getElementById('results').classList.remove('show');
+
+  const loadingBar = document.getElementById('loadingBar');
+  const statusText = document.getElementById('statusText');
+  const loadingFill = document.getElementById('loadingFill');
+  loadingBar.classList.add('active');
+  statusText.classList.add('active');
+
+  // 진행 상태 표시
+  const steps = [
+    { text: '▶ 서버에 영상 전송 중...', pct: 20 },
+    { text: '🎤 Gemini가 소리 분석 중...', pct: 45 },
+    { text: '👁 화면 프레임 분석 중...', pct: 65 },
+    { text: '🧠 AI 보고서 생성 중...', pct: 85 },
+  ];
+
+  let stepIdx = 0;
+  const stepInterval = setInterval(() => {
+    if (stepIdx < steps.length) {
+      statusText.textContent = steps[stepIdx].text;
+      loadingFill.style.width = steps[stepIdx].pct + '%';
+      stepIdx++;
+    }
+  }, 2000);
+
+  try {
+    const formData = new FormData();
+    formData.append('api_key', apiKey);
+    if (selectedFile) {
+      formData.append('video', selectedFile);
+    } else {
+      formData.append('url', videoUrl);
+    }
+
+    const res = await fetch(`${serverUrl}/analyze`, {
+      method: 'POST',
+      body: formData
+    });
+
+    clearInterval(stepInterval);
+    const json = await res.json();
+
+    if (!res.ok || !json.success) {
+      showError(json.error || '분석 실패');
+      return;
+    }
+
+    loadingFill.style.width = '100%';
+    statusText.textContent = '✅ 분석 완료!';
+    await sleep(500);
+
+    renderResults(json.data);
+    document.getElementById('results').classList.add('show');
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+
+  } catch (e) {
+    clearInterval(stepInterval);
+    showError('서버 연결 실패: ' + e.message);
+  } finally {
+    loadingBar.classList.remove('active');
+    statusText.classList.remove('active');
+    btn.disabled = false;
+  }
+}
+
+function showError(msg) {
+  const box = document.getElementById('errorBox');
+  box.textContent = '⚠️ ' + msg;
+  box.classList.add('show');
+  document.getElementById('loadingBar').classList.remove('active');
+  document.getElementById('statusText').classList.remove('active');
+  document.getElementById('analyzeBtn').disabled = false;
+}
+
+function renderResults(data) {
+  const timeline = document.getElementById('timeline');
+  timeline.innerHTML = '';
+  document.getElementById('transcriptCount').textContent = data.transcript.length + '개 구간';
+  data.transcript.forEach(item => {
+    const sc = item.speaker === 'A' ? 'speaker-a' : 'speaker-b';
+    timeline.innerHTML += `<div class="timeline-item"><div class="timestamp">${item.time}</div><div class="transcript-text"><span class="speaker-tag ${sc}">${item.speaker}</span>${item.text}</div></div>`;
+  });
+
+  const grid = document.getElementById('visualGrid');
+  grid.innerHTML = '';
+  data.visual.forEach(item => {
+    const tags = (item.tags || []).map(t => `<span class="visual-tag">${t}</span>`).join('');
+    grid.innerHTML += `<div class="visual-card"><div class="visual-time">${item.time}</div><div class="visual-desc">${item.desc}</div><div class="visual-tags">${tags}</div></div>`;
+  });
+
+  const r = data.report;
+  document.getElementById('reportMeta').innerHTML = `
+    <div class="meta-item"><span class="meta-val">${r.duration}</span><span class="meta-key">재생시간</span></div>
+    <div class="meta-item"><span class="meta-val">${r.speakers}</span><span class="meta-key">화자 수</span></div>
+    <div class="meta-item"><span class="meta-val">${r.scenes}</span><span class="meta-key">장면 수</span></div>`;
+  document.getElementById('reportBody').textContent = r.summary;
+  const hl = document.getElementById('reportHighlights');
+  hl.innerHTML = '';
+  r.highlights.forEach(h => {
+    hl.innerHTML += `<div class="highlight-item"><div class="highlight-dot"></div><span>${h}</span></div>`;
+  });
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>
